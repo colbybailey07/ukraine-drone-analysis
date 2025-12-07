@@ -158,10 +158,7 @@ if raw_df is None:
 # ==========================================
 
 # --- FILTER LOGIC ---
-# Calculate total drones per city to see who has data
 city_sums = grouped_df.groupby('City_Region')['Drone_Count'].sum()
-
-# Only keep cities that have at least 1 drone strike
 active_cities = [city for city in hub_coords.keys() if city in city_sums.index and city_sums[city] > 0]
 
 # Create Tabs (Overview + Only Active Cities)
@@ -186,7 +183,6 @@ with tabs[0]:
     map_data['lon'] = map_data['City_Region'].map(lambda x: hub_coords.get(x, {}).get('lon'))
     map_data = map_data.dropna(subset=['lat', 'lon'])
     
-    # Filter out 0-data rows for the map too (just in case)
     map_data = map_data[map_data['Drone_Count'] > 0]
 
     st.subheader("Geographic Heatmap: Active Hubs")
@@ -199,8 +195,6 @@ with tabs[0]:
         mapbox_style="open-street-map",
         title="Size = Drone Volume | Color = Fatalities (Darker = Higher)",
         size_max=50, 
-        # Magma is a high-contrast scale (Black-Purple-Orange-Yellow)
-        # It has no white, so it's very visible on the map.
         color_continuous_scale=px.colors.sequential.Magma
     )
     st.plotly_chart(fig_map, use_container_width=True)
@@ -225,3 +219,13 @@ for i, city_name in enumerate(active_cities):
         )
         fig_time.update_layout(xaxis={'categoryorder':'category ascending'})
         st.plotly_chart(fig_time, use_container_width=True)
+
+# ==========================================
+# DISCLAIMER / FOOTER
+# ==========================================
+st.markdown("---")
+st.caption(
+    "Data from 'Massive Missile Attacks on Ukraine' and 'Civilian Harm in Ukraine' from Kaggle. "
+    "Data is not representative of all civilian casualties nor all drone strikes in Ukraine. "
+    "Data represents the general trend that can be applied to the entire population."
+)
